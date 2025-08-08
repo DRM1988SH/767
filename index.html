@@ -1,0 +1,2419 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الذبائح وسجلات المتعاملين</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* شاشة الترحيب */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .welcome-screen img {
+            max-width: 80%;
+            max-height: 80%;
+            animation: pulse 2s infinite;
+        }
+        
+        .design-credit {
+            position: absolute;
+            bottom: 20px;
+            font-size: 16px;
+            color: #5D4037;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* شاشة تسجيل الدخول */
+        .login-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #5D4037 0%, #8D6E63 100%);
+        }
+        
+        .login-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            text-align: center;
+            transform: translateY(-20px);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .login-box:hover {
+            transform: translateY(-25px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+        
+        .login-box h2 {
+            margin-bottom: 20px;
+            color: #5D4037;
+            font-size: 24px;
+        }
+        
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .login-box input:focus {
+            border-color: #5D4037;
+            outline: none;
+        }
+        
+        .login-box button {
+            background-color: #5D4037;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        .login-box button:hover {
+            background-color: #3E2723;
+            transform: translateY(-2px);
+        }
+        
+        .login-box button:active {
+            transform: translateY(0);
+        }
+        
+        /* لوحة التحكم */
+        .dashboard {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+            position: relative;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .dashboard-header {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 10;
+        }
+        
+        .dashboard-title {
+            text-align: left;
+            margin-bottom: 30px;
+            color: #5D4037;
+            font-size: 28px;
+            position: relative;
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 60px;
+        }
+        
+        .dashboard-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100px;
+            height: 3px;
+            background-color: #5D4037;
+            border-radius: 3px;
+        }
+        
+        .dashboard-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .dashboard-button {
+            background-color: #5D4037;
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 150px;
+            transition: transform 0.3s, background-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dashboard-button:hover {
+            background-color: #3E2723;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .dashboard-button i {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        
+        /* شاشة إدخال البيانات */
+        .data-entry {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .data-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .data-entry-title {
+            color: #5D4037;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .data-entry-time {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #f8f8f8;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #5D4037;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        select:focus, input:focus {
+            border-color: #5D4037;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(93, 64, 55, 0.2);
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background-color: #f8f8f8;
+            transition: background-color 0.3s;
+        }
+        
+        .radio-option:hover {
+            background-color: #eee;
+        }
+        
+        .radio-option input[type="radio"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 10px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: #5D4037;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            background-color: #3E2723;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-danger:hover {
+            background-color: #bd2130;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-danger:active {
+            transform: translateY(0);
+        }
+        
+        /* شاشة تقرير المتعاملين */
+        .customer-report {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .report-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .report-filters .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .report-table th, .report-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .report-table th {
+            background-color: #5D4037;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .report-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .report-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        /* شاشة التقرير الإحصائي */
+        .statistics-report {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* شاشة الإعدادات */
+        .settings {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .settings-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .settings-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .settings-tab:hover {
+            color: #5D4037;
+            background-color: #f9f9f9;
+        }
+        
+        .settings-tab.active {
+            border-bottom: 3px solid #5D4037;
+            font-weight: bold;
+            color: #5D4037;
+        }
+        
+        .settings-content {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .settings-content.active {
+            display: block;
+        }
+        
+        .user-list {
+            margin-top: 20px;
+        }
+        
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+        
+        .user-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        /* الفاتورة */
+        .invoice {
+            display: none;
+            background-color: white;
+            padding: 30px;
+            max-width: 800px;
+            margin: 20px auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .invoice-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #5D4037;
+            margin-bottom: 10px;
+        }
+        
+        .invoice-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: right;
+        }
+        
+        .invoice-table th {
+            background-color: #5D4037;
+            color: white;
+            font-weight: 500;
+        }
+        
+        .invoice-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .invoice-footer {
+            text-align: center;
+            margin-top: 30px;
+            font-style: italic;
+            color: #666;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        /* البطاقة الغذائية */
+        .food-card {
+            display: none;
+            width: 9.701in;
+            height: 1.907in;
+            border: 3px solid #000;
+            padding: 15px;
+            margin: 20px auto;
+            position: relative;
+            background-color: white;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .food-card-header {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #5D4037;
+        }
+        
+        .food-card-table {
+            width: 80%;
+            border-collapse: collapse;
+            border: 2px solid #000;
+            margin: 0 auto;
+        }
+        
+        .food-card-table th, .food-card-table td {
+            border: 2px solid #000;
+            padding: 8px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .food-card-table th {
+            background-color: #f0f0f0;
+        }
+        
+        .sticker-number {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            font-size: 28px;
+            font-weight: bold;
+            border: 3px solid #000;
+            padding: 10px 15px;
+            background-color: white;
+        }
+        
+        .food-card-footer {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 10px;
+            color: #666;
+        }
+        
+        /* الطباعة */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .invoice, .invoice *,
+            .food-card, .food-card * {
+                visibility: visible;
+            }
+            .invoice, .food-card {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 20px;
+                box-shadow: none;
+                border: none;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+        
+        /* الرسائل */
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-out 2.5s forwards;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        .message.success {
+            background-color: #4CAF50;
+        }
+        
+        .message.error {
+            background-color: #f44336;
+        }
+        
+        /* أيقونات */
+        .icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            vertical-align: middle;
+            margin-left: 5px;
+        }
+        
+        .icon-calendar {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235D4037"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>');
+        }
+        
+        .icon-clock {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235D4037"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>');
+        }
+        
+        .icon-user {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235D4037"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3s1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>');
+        }
+        
+        .icon-report {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235D4037"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>');
+        }
+        
+        .icon-settings {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235D4037"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>');
+        }
+        
+        .icon-add {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235D4037"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>');
+        }
+        
+        .icon-back {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235D4037"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>');
+        }
+        
+        .icon-print {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235D4037"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>');
+        }
+        
+        .icon-pdf {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%235D4037"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg>');
+        }
+        
+        .icon-logout {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>');
+        }
+        
+        .icon-close {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffffff"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>');
+        }
+        
+        /* تحسينات للجوال */
+        @media (max-width: 768px) {
+            .dashboard-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .report-filters {
+                flex-direction: column;
+            }
+            
+            .invoice, .food-card {
+                width: 95%;
+                padding: 15px;
+            }
+            
+            .food-card-table {
+                width: 70%;
+            }
+            
+            .sticker-number {
+                font-size: 20px;
+                padding: 5px 10px;
+            }
+            
+            .dashboard-header {
+                position: static;
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+            
+            .dashboard-title {
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة الترحيب -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 20c-16.54 0-30 13.46-30 30s13.46 30 30 30 30-13.46 30-30-13.46-30-30-30zm0 55c-13.81 0-25-11.19-25-25s11.19-25 25-25 25 11.19 25 25-11.19 25-25 25z' fill='%235D4037'/><path d='M50 30c-11.05 0-20 8.95-20 20s8.95 20 20 20 20-8.95 20-20-8.95-20-20-20zm0 35c-8.27 0-15-6.73-15-15s6.73-15 15-15 15 6.73 15 15-6.73 15-15 15z' fill='%235D4037'/><circle cx='50' cy='50' r='10' fill='%235D4037'/><path d='M60 50c0 5.52-4.48 10-10 10s-10-4.48-10-10 4.48-10 10-10 10 4.48 10 10z' fill='%235D4037'/><circle cx='50' cy='50' r='5' fill='white'/></svg>" alt="Sheep">
+        <p class="design-credit">تصميم بواسطة Musab Ali</p>
+    </div>
+    
+    <!-- شاشة تسجيل الدخول -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <h2>تسجيل الدخول</h2>
+            <input type="text" id="employeeId" placeholder="الرقم الوظيفي">
+            <input type="password" id="password" placeholder="كلمة المرور">
+            <button id="loginBtn">دخول</button>
+        </div>
+    </div>
+    
+    <!-- لوحة التحكم -->
+    <div class="dashboard" id="dashboard">
+        <!-- زر تسجيل الخروج وإغلاق البرنامج في أعلى الصفحة من جهة اليمين -->
+        <div class="dashboard-header">
+            <button class="btn btn-secondary" id="logoutBtn">
+                <span class="icon icon-logout"></span>
+                تسجيل خروج
+            </button>
+            <button class="btn btn-danger" id="closeProgramBtn">
+                <span class="icon icon-close"></span>
+                اغلاق البرنامج
+            </button>
+        </div>
+        
+        <h1 class="dashboard-title">
+            <span class="icon icon-user"></span>
+            مرحبا المستخدم
+        </h1>
+        <div class="dashboard-buttons">
+            <button class="dashboard-button" id="dataEntryBtn">
+                <span class="icon icon-user"></span>
+                شاشة ادخال البيانات
+            </button>
+            <button class="dashboard-button" id="customerReportBtn">
+                <span class="icon icon-report"></span>
+                تقرير المتعاملين
+            </button>
+            <button class="dashboard-button" id="statsReportBtn">
+                <span class="icon icon-report"></span>
+                التقرير الاحصائي والمالية
+            </button>
+            <button class="dashboard-button" id="settingsBtn">
+                <span class="icon icon-settings"></span>
+                إعدادات النظام
+            </button>
+        </div>
+    </div>
+    
+    <!-- شاشة إدخال البيانات -->
+    <div class="data-entry" id="dataEntry">
+        <div class="data-entry-header">
+            <h1 class="data-entry-title">نظام إدارة الذبائح وسجلات المتعاملين</h1>
+            <div class="data-entry-time">
+                <span id="currentDate"></span>
+                <span class="icon icon-calendar"></span>
+                <span id="currentTime"></span>
+                <span class="icon icon-clock"></span>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="slaughterhouse">الموقع:</label>
+            <select id="slaughterhouse">
+                <option value="">اختر الموقع</option>
+                <option value="مسلخ مدينة زايد">مسلخ مدينة زايد</option>
+                <option value="مسلخ مدينة ليوا">مسلخ مدينة ليوا</option>
+                <option value="مسلخ مدينة المرفأ">مسلخ مدينة المرفأ</option>
+                <option value="مسلخ مدينة غياثي">مسلخ مدينة غياثي</option>
+                <option value="مسلخ مدينة السلع">مسلخ مدينة السلع</option>
+                <option value="مسلخ مدينة دلما">مسلخ مدينة دلما</option>
+                <option value="المسلخ المتنقل 1">المسلخ المتنقل 1</option>
+                <option value="المسلخ المتنقل 2">المسلخ المتنقل 2</option>
+            </select>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="customerPhone">رقم التلفون:</label>
+                <input type="text" id="customerPhone" placeholder="ادخل رقم التلفون">
+            </div>
+            <div class="form-group">
+                <label for="customerName">اسم المتعامل:</label>
+                <input type="text" id="customerName" placeholder="اسم المتعامل">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="invoiceNumber">رقم الفاتورة:</label>
+                <input type="text" id="invoiceNumber" readonly>
+            </div>
+            <div class="form-group">
+                <label for="stickerNumber">رقم الاستيكر:</label>
+                <select id="stickerNumber">
+                    <option value="">اختر رقم الاستيكر</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="slaughterNumber">رقم الذبيحة:</label>
+                <select id="slaughterNumber">
+                    <option value="">اختر رقم الذبيحة</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="animalType">نوع الذبيحة:</label>
+            <select id="animalType">
+                <option value="">اختر نوع الذبيحة</option>
+                <option value="خروف">خروف</option>
+                <option value="ماعز">ماعز</option>
+                <option value="عجل صغير">عجل صغير</option>
+                <option value="بقر كبير">بقر كبير</option>
+                <option value="حوار صغير">حوار صغير</option>
+                <option value="جمل كبير">جمل كبير</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="cuttingType">نوع التقطيع:</label>
+            <select id="cuttingType">
+                <option value="">اختر نوع التقطيع</option>
+                <option value="عزيمة">عزيمة</option>
+                <option value="ثلاجة">ثلاجة</option>
+                <option value="كامل">كامل</option>
+            </select>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="quantity">عدد الذبائح:</label>
+                <input type="number" id="quantity" min="1" value="1">
+            </div>
+            <div class="form-group">
+                <label for="price">السعر:</label>
+                <input type="number" id="price" min="0" step="0.01" readonly>
+            </div>
+            <div class="form-group">
+                <label for="total">الإجمالي:</label>
+                <input type="number" id="total" min="0" step="0.01" readonly>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>طريقة الدفع:</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="paymentMethod" value="بطاقة" checked>
+                    بطاقة
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="paymentMethod" value="كاش">
+                    كاش
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>ملحقات:</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="extras" value="كرش مصران كوارع" checked>
+                    كرش مصران كوارع
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="extras" value="كرش مصران">
+                    كرش مصران
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="extras" value="كوارع">
+                    كوارع
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn btn-secondary" id="backToDashboardBtn">
+                <span class="icon icon-back"></span>
+                رجوع إلى القائمة الرئيسية
+            </button>
+            <div>
+                <button class="btn btn-primary" id="addSlaughterBtn">اضافة ذبيحة</button>
+                <button class="btn btn-primary" id="printInvoiceBtn">طباعة فاتورة</button>
+                <button class="btn btn-primary" id="printFoodCardBtn">طباعة بطاقة غذائية</button>
+                <button class="btn btn-primary" id="customerReportFromEntryBtn">تقرير المتعاملين</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- شاشة تقرير المتعاملين -->
+    <div class="customer-report" id="customerReport">
+        <h1 class="dashboard-title">تقرير المتعاملين</h1>
+        
+        <div class="report-filters">
+            <div class="form-group">
+                <label for="customerReportFromDate">من تاريخ:</label>
+                <input type="date" id="customerReportFromDate">
+            </div>
+            <div class="form-group">
+                <label for="customerReportToDate">إلى تاريخ:</label>
+                <input type="date" id="customerReportToDate">
+            </div>
+            <div class="form-group">
+                <label for="customerReportPhoneFilter">رقم التلفون:</label>
+                <input type="text" id="customerReportPhoneFilter" placeholder="ابحث برقم التلفون">
+            </div>
+            <button class="btn btn-primary" id="filterCustomerReportBtn">تصفية</button>
+        </div>
+        
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>التاريخ</th>
+                    <th>رقم التلفون</th>
+                    <th>اسم المتعامل</th>
+                    <th>رقم الفاتورة</th>
+                    <th>نوع الذبيحة</th>
+                    <th>نوع التقطيع</th>
+                    <th>العدد</th>
+                    <th>الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody id="customerReportTableBody">
+                <!-- سيتم ملؤها بالبيانات -->
+            </tbody>
+        </table>
+        
+        <div class="form-actions">
+            <button class="btn btn-secondary" id="backToDashboardFromCustomerReportBtn">
+                <span class="icon icon-back"></span>
+                رجوع إلى القائمة الرئيسية
+            </button>
+            <button class="btn btn-primary" id="exportCustomerReportPdfBtn">
+                <span class="icon icon-pdf"></span>
+                تصدير PDF
+            </button>
+        </div>
+    </div>
+    
+    <!-- شاشة التقرير الإحصائي -->
+    <div class="statistics-report" id="statisticsReport">
+        <h1 class="dashboard-title">التقرير الاحصائي والمالية</h1>
+        
+        <div class="report-filters">
+            <div class="form-group">
+                <label for="statsReportFromDate">من تاريخ:</label>
+                <input type="date" id="statsReportFromDate">
+            </div>
+            <div class="form-group">
+                <label for="statsReportToDate">إلى تاريخ:</label>
+                <input type="date" id="statsReportToDate">
+            </div>
+            <button class="btn btn-primary" id="filterStatsReportBtn">تصفية</button>
+        </div>
+        
+        <table class="report-table">
+            <thead>
+                <tr>
+                    <th>نوع الذبيحة</th>
+                    <th>نوع التقطيع</th>
+                    <th>العدد</th>
+                    <th>اجمالي المبلغ</th>
+                </tr>
+            </thead>
+            <tbody id="statsReportTableBody">
+                <!-- سيتم ملؤها بالبيانات -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2">المجموع</td>
+                    <td id="totalQuantity">0</td>
+                    <td id="totalAmount">0.00</td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <div class="form-actions">
+            <button class="btn btn-secondary" id="backToDashboardFromStatsReportBtn">
+                <span class="icon icon-back"></span>
+                رجوع إلى القائمة الرئيسية
+            </button>
+            <button class="btn btn-primary" id="exportStatsReportPdfBtn">
+                <span class="icon icon-pdf"></span>
+                تصدير PDF
+            </button>
+        </div>
+    </div>
+    
+    <!-- شاشة الإعدادات -->
+    <div class="settings" id="settings">
+        <h1 class="dashboard-title">إعدادات النظام</h1>
+        
+        <div class="settings-tabs">
+            <div class="settings-tab active" data-tab="users">المستخدمون</div>
+            <div class="settings-tab" data-tab="slaughterhouses">المسالخ</div>
+            <div class="settings-tab" data-tab="animals">الذبائح</div>
+            <div class="settings-tab" data-tab="system">إعدادات النظام</div>
+        </div>
+        
+        <!-- إدارة المستخدمين -->
+        <div class="settings-content active" id="usersTab">
+            <h2>إضافة مستخدم جديد</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newEmployeeId">الرقم الوظيفي:</label>
+                    <input type="text" id="newEmployeeId" placeholder="الرقم الوظيفي">
+                </div>
+                <div class="form-group">
+                    <label for="newEmployeeName">اسم المستخدم:</label>
+                    <input type="text" id="newEmployeeName" placeholder="اسم المستخدم">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newEmployeePassword">كلمة المرور:</label>
+                    <input type="password" id="newEmployeePassword" placeholder="كلمة المرور">
+                </div>
+                <div class="form-group">
+                    <label for="newEmployeeRole">الدور:</label>
+                    <select id="newEmployeeRole">
+                        <option value="admin">مشرف</option>
+                        <option value="user">مدخل بيانات</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="addEmployeeBtn">
+                <span class="icon icon-add"></span>
+                إضافة مستخدم
+            </button>
+            
+            <div class="user-list">
+                <h2>قائمة المستخدمين</h2>
+                <div id="usersList">
+                    <!-- سيتم ملؤها بالبيانات -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- إدارة المسالخ -->
+        <div class="settings-content" id="slaughterhousesTab">
+            <h2>إضافة مسلخ جديد</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newSlaughterhouseName">اسم المسلخ:</label>
+                    <input type="text" id="newSlaughterhouseName" placeholder="اسم المسلخ">
+                </div>
+                <div class="form-group">
+                    <label for="newSlaughterhousePrefix">بادئة الفاتورة:</label>
+                    <input type="text" id="newSlaughterhousePrefix" placeholder="مثال: GHSH">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="addSlaughterhouseBtn">
+                <span class="icon icon-add"></span>
+                إضافة مسلخ
+            </button>
+            
+            <div class="user-list">
+                <h2>قائمة المسالخ</h2>
+                <div id="slaughterhousesList">
+                    <!-- سيتم ملؤها بالبيانات -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- إدارة الذبائح -->
+        <div class="settings-content" id="animalsTab">
+            <h2>إضافة نوع ذبيحة</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="newAnimalType">نوع الذبيحة:</label>
+                    <input type="text" id="newAnimalType" placeholder="مثال: خروف">
+                </div>
+                <div class="form-group">
+                    <label for="newAnimalExpiryDays">أيام الصلاحية:</label>
+                    <input type="number" id="newAnimalExpiryDays" placeholder="أيام الصلاحية">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="addAnimalTypeBtn">
+                <span class="icon icon-add"></span>
+                إضافة نوع ذبيحة
+            </button>
+            
+            <h2>إضافة نوع تقطيع وسعر</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cuttingAnimalType">نوع الذبيحة:</label>
+                    <select id="cuttingAnimalType">
+                        <!-- سيتم ملؤها بالبيانات -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="newCuttingType">نوع التقطيع:</label>
+                    <input type="text" id="newCuttingType" placeholder="مثال: عزيمة">
+                </div>
+                <div class="form-group">
+                    <label for="newCuttingPrice">السعر:</label>
+                    <input type="number" id="newCuttingPrice" placeholder="السعر" step="0.01">
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" id="addCuttingTypeBtn">
+                <span class="icon icon-add"></span>
+                إضافة نوع تقطيع
+            </button>
+            
+            <div class="user-list">
+                <h2>قائمة أنواع الذبائح والتقطيع</h2>
+                <div id="animalsList">
+                    <!-- سيتم ملؤها بالبيانات -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- إعدادات النظام -->
+        <div class="settings-content" id="systemTab">
+            <h2>تغيير صورة شاشة الترحيب</h2>
+            <div class="form-group">
+                <input type="file" id="welcomeImageUpload" accept="image/*">
+                <button class="btn btn-primary" id="changeWelcomeImageBtn" style="margin-top: 10px;">
+                    تغيير الصورة
+                </button>
+            </div>
+            
+            <h2>إعدادات أخرى</h2>
+            <div class="form-group">
+                <label for="defaultSlaughterhouse">المسلخ الافتراضي:</label>
+                <select id="defaultSlaughterhouse">
+                    <!-- سيتم ملؤها بالبيانات -->
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn btn-secondary" id="backToDashboardFromSettingsBtn">
+                <span class="icon icon-back"></span>
+                رجوع إلى القائمة الرئيسية
+            </button>
+        </div>
+    </div>
+    
+    <!-- الفاتورة -->
+    <div class="invoice" id="invoice">
+        <div class="invoice-header">
+            <h1 class="invoice-title">مسالخ منطقة الظفرة</h1>
+            <h2 id="invoiceSlaughterhouseName">مسلخ مدينة غياثي</h2>
+            <h3>فاتورة ذبيح</h3>
+            <p id="invoiceDate">التاريخ: 01/01/2023</p>
+        </div>
+        
+        <div class="invoice-details">
+            <div>
+                <p><strong>اسم المتعامل:</strong> <span id="invoiceCustomerName">-</span></p>
+                <p><strong>رقم التلفون:</strong> <span id="invoiceCustomerPhone">-</span></p>
+            </div>
+            <div>
+                <p><strong>طريقة الدفع:</strong> <span id="invoicePaymentMethod">-</span></p>
+                <p><strong>الملحقات:</strong> <span id="invoiceExtras">-</span></p>
+            </div>
+        </div>
+        
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>البند</th>
+                    <th>الكمية</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>رقم الفاتورة</td>
+                    <td id="invoiceNumberDisplay">-</td>
+                </tr>
+                <tr>
+                    <td>رقم الذبيحة</td>
+                    <td id="invoiceSlaughterNumber">-</td>
+                </tr>
+                <tr>
+                    <td>رقم الاستيكر</td>
+                    <td id="invoiceStickerNumber">-</td>
+                </tr>
+                <tr>
+                    <td>نوع الذبيحة</td>
+                    <td id="invoiceAnimalType">-</td>
+                </tr>
+                <tr>
+                    <td>نوع التقطيع</td>
+                    <td id="invoiceCuttingType">-</td>
+                </tr>
+                <tr>
+                    <td>العدد</td>
+                    <td id="invoiceQuantity">-</td>
+                </tr>
+                <tr>
+                    <td>السعر</td>
+                    <td id="invoicePrice">-</td>
+                </tr>
+                <tr>
+                    <td>الإجمالي</td>
+                    <td id="invoiceTotal">-</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="invoice-footer">
+            <p>تمت طباعة الفاتورة بواسطة المستخدم <span id="invoiceEmployeeName">-</span></p>
+            <button class="btn btn-primary no-print" id="closeInvoiceBtn" style="margin-top: 20px;">
+                إغلاق الفاتورة
+            </button>
+        </div>
+    </div>
+    
+    <!-- البطاقة الغذائية -->
+    <div class="food-card" id="foodCard">
+        <div class="food-card-header" id="foodCardSlaughterhouse">مسلخ مدينة غياثي</div>
+        <table class="food-card-table">
+            <tr>
+                <th>نوع الذبيحة</th>
+                <th>نوع التقطيع</th>
+                <th>تاريخ الإنتاج</th>
+                <th>تاريخ الانتهاء</th>
+            </tr>
+            <tr>
+                <td id="foodCardAnimalType">-</td>
+                <td id="foodCardCuttingType">-</td>
+                <td id="foodCardProductionDate">-</td>
+                <td id="foodCardExpiryDate">-</td>
+            </tr>
+        </table>
+        <div class="sticker-number" id="foodCardStickerNumber">-</div>
+        <div class="food-card-footer">لاي ملاحظة يرجى مراجعة المسلخ</div>
+        <button class="btn btn-primary no-print" id="closeFoodCardBtn" style="margin-top: 20px; width: 100%;">
+            إغلاق البطاقة الغذائية
+        </button>
+    </div>
+    
+    <!-- الرسائل -->
+    <div class="message" id="message"></div>
+    
+    <script>
+        // البيانات التطبيق
+        let appData = {
+            currentUser: null,
+            users: [
+                { id: '70062', name: 'Musab Ali', password: 'admin123', role: 'admin' }
+            ],
+            customers: [],
+            slaughters: [],
+            slaughterhouses: [
+                { name: 'مسلخ مدينة زايد', prefix: 'ZAID' },
+                { name: 'مسلخ مدينة ليوا', prefix: 'LIWA' },
+                { name: 'مسلخ مدينة المرفأ', prefix: 'MRFA' },
+                { name: 'مسلخ مدينة غياثي', prefix: 'GHSH' },
+                { name: 'مسلخ مدينة السلع', prefix: 'SLA' },
+                { name: 'مسلخ مدينة دلما', prefix: 'DLMA' },
+                { name: 'المسلخ المتنقل 1', prefix: 'MOB1' },
+                { name: 'المسلخ المتنقل 2', prefix: 'MOB2' }
+            ],
+            animalTypes: [
+                { type: 'خروف', expiryDays: 14 },
+                { type: 'ماعز', expiryDays: 14 },
+                { type: 'عجل صغير', expiryDays: 21 },
+                { type: 'بقر كبير', expiryDays: 21 },
+                { type: 'حوار صغير', expiryDays: 21 },
+                { type: 'جمل كبير', expiryDays: 21 }
+            ],
+            cuttingTypes: [
+                { animalType: 'خروف', type: 'عزيمة', price: 100 },
+                { animalType: 'خروف', type: 'ثلاجة', price: 120 },
+                { animalType: 'خروف', type: 'كامل', price: 150 },
+                { animalType: 'ماعز', type: 'عزيمة', price: 120 },
+                { animalType: 'ماعز', type: 'ثلاجة', price: 140 },
+                { animalType: 'ماعز', type: 'كامل', price: 170 },
+                { animalType: 'عجل صغير', type: 'عزيمة', price: 500 },
+                { animalType: 'عجل صغير', type: 'ثلاجة', price: 550 },
+                { animalType: 'عجل صغير', type: 'كامل', price: 600 },
+                { animalType: 'بقر كبير', type: 'عزيمة', price: 800 },
+                { animalType: 'بقر كبير', type: 'ثلاجة', price: 850 },
+                { animalType: 'بقر كبير', type: 'كامل', price: 900 },
+                { animalType: 'حوار صغير', type: 'عزيمة', price: 400 },
+                { animalType: 'حوار صغير', type: 'ثلاجة', price: 450 },
+                { animalType: 'حوار صغير', type: 'كامل', price: 500 },
+                { animalType: 'جمل كبير', type: 'عزيمة', price: 1000 },
+                { animalType: 'جمل كبير', type: 'ثلاجة', price: 1100 },
+                { animalType: 'جمل كبير', type: 'كامل', price: 1200 }
+            ],
+            settings: {
+                welcomeImage: null,
+                defaultSlaughterhouse: 'مسلخ مدينة غياثي'
+            },
+            lastInvoiceNumbers: {}
+        };
+        
+        // تهيئة أرقام الفواتير الأخيرة لكل مسلخ
+        appData.slaughterhouses.forEach(sh => {
+            appData.lastInvoiceNumbers[sh.prefix] = 0;
+        });
+        
+        // DOM Elements
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboard = document.getElementById('dashboard');
+        const dataEntry = document.getElementById('dataEntry');
+        const customerReport = document.getElementById('customerReport');
+        const statisticsReport = document.getElementById('statisticsReport');
+        const settings = document.getElementById('settings');
+        const invoice = document.getElementById('invoice');
+        const foodCard = document.getElementById('foodCard');
+        const message = document.getElementById('message');
+        
+        // حفظ البيانات في localStorage
+        function saveData() {
+            localStorage.setItem('slaughterManagementAppData', JSON.stringify(appData));
+        }
+        
+        // تحميل البيانات من localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('slaughterManagementAppData');
+            if (savedData) {
+                appData = JSON.parse(savedData);
+            }
+        }
+        
+        // حفظ حالة التطبيق
+        function saveAppState() {
+            const state = {
+                currentScreen: document.querySelector('div:not([style*="none"])')?.id || 'dashboard',
+                user: appData.currentUser ? { id: appData.currentUser.id } : null
+            };
+            localStorage.setItem('slaughterManagementAppState', JSON.stringify(state));
+        }
+        
+        // تحميل حالة التطبيق
+        function loadAppState() {
+            const savedState = localStorage.getItem('slaughterManagementAppState');
+            if (savedState) {
+                const state = JSON.parse(savedState);
+                if (state.user) {
+                    const user = appData.users.find(u => u.id === state.user.id);
+                    if (user) {
+                        appData.currentUser = user;
+                        return state.currentScreen;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        // عرض رسالة
+        function showMessage(text, type = 'success') {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+            
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 3000);
+        }
+        
+        // تغيير الشاشة
+        function showScreen(screen) {
+            const screens = [loginScreen, dashboard, dataEntry, customerReport, statisticsReport, settings, invoice, foodCard];
+            screens.forEach(s => s.style.display = 'none');
+            
+            screen.style.display = 'block';
+            saveAppState();
+            
+            // تحديث البيانات عند عرض الشاشات
+            if (screen === dataEntry) {
+                updateDataEntryScreen();
+            } else if (screen === customerReport) {
+                updateCustomerReport();
+            } else if (screen === statisticsReport) {
+                updateStatisticsReport();
+            } else if (screen === settings) {
+                updateSettingsScreen();
+            }
+        }
+        
+        // تحديث شاشة إدخال البيانات
+        function updateDataEntryScreen() {
+            const now = new Date();
+            document.getElementById('currentDate').textContent = now.toLocaleDateString();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+            
+            // تعبئة أرقام الاستيكر والذبائح
+            const stickerSelect = document.getElementById('stickerNumber');
+            const slaughterSelect = document.getElementById('slaughterNumber');
+            
+            stickerSelect.innerHTML = '<option value="">اختر رقم الاستيكر</option>';
+            slaughterSelect.innerHTML = '<option value="">اختر رقم الذبيحة</option>';
+            
+            for (let i = 1; i <= 1000; i++) {
+                const stickerOption = document.createElement('option');
+                stickerOption.value = i;
+                stickerOption.textContent = i;
+                stickerSelect.appendChild(stickerOption);
+                
+                const slaughterOption = document.createElement('option');
+                slaughterOption.value = i;
+                slaughterOption.textContent = i;
+                slaughterSelect.appendChild(slaughterOption);
+            }
+            
+            // تحديث السعر عند تغيير نوع الذبيحة أو التقطيع
+            document.getElementById('animalType').addEventListener('change', updatePrice);
+            document.getElementById('cuttingType').addEventListener('change', updatePrice);
+            document.getElementById('quantity').addEventListener('input', updateTotal);
+            
+            // البحث عن العميل عند إدخال رقم الهاتف
+            document.getElementById('customerPhone').addEventListener('input', function() {
+                const phone = this.value;
+                const customer = appData.customers.find(c => c.phone === phone);
+                if (customer) {
+                    document.getElementById('customerName').value = customer.name;
+                }
+            });
+            
+            // تحديث رقم الفاتورة عند تغيير المسلخ
+            document.getElementById('slaughterhouse').addEventListener('change', function() {
+                const selectedSlaughterhouse = appData.slaughterhouses.find(sh => sh.name === this.value);
+                if (selectedSlaughterhouse) {
+                    const prefix = selectedSlaughterhouse.prefix;
+                    const lastNumber = appData.lastInvoiceNumbers[prefix] || 0;
+                    const newNumber = lastNumber + 1;
+                    document.getElementById('invoiceNumber').value = `${prefix}-${String(newNumber).padStart(5, '0')}`;
+                }
+            });
+            
+            // تعيين المسلخ الافتراضي
+            const defaultSlaughterhouse = appData.settings.defaultSlaughterhouse;
+            if (defaultSlaughterhouse) {
+                document.getElementById('slaughterhouse').value = defaultSlaughterhouse;
+                document.getElementById('slaughterhouse').dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // تحديث السعر بناءً على نوع الذبيحة والتقطيع
+        function updatePrice() {
+            const animalType = document.getElementById('animalType').value;
+            const cuttingType = document.getElementById('cuttingType').value;
+            
+            if (animalType && cuttingType) {
+                const cutting = appData.cuttingTypes.find(ct => 
+                    ct.animalType === animalType && ct.type === cuttingType
+                );
+                
+                if (cutting) {
+                    document.getElementById('price').value = cutting.price;
+                    updateTotal();
+                }
+            }
+        }
+        
+        // تحديث الإجمالي
+        function updateTotal() {
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const quantity = parseInt(document.getElementById('quantity').value) || 0;
+            const total = price * quantity;
+            document.getElementById('total').value = total.toFixed(2);
+        }
+        
+        // تحديث تقرير المتعاملين
+        function updateCustomerReport() {
+            const fromDate = document.getElementById('customerReportFromDate').value;
+            const toDate = document.getElementById('customerReportToDate').value;
+            const phoneFilter = document.getElementById('customerReportPhoneFilter').value.toLowerCase();
+            
+            let filteredSlaughters = [...appData.slaughters];
+            
+            // تصفية حسب التاريخ
+            if (fromDate) {
+                filteredSlaughters = filteredSlaughters.filter(s => 
+                    new Date(s.date) >= new Date(fromDate)
+                );
+            }
+            
+            if (toDate) {
+                filteredSlaughters = filteredSlaughters.filter(s => 
+                    new Date(s.date) <= new Date(toDate + 'T23:59:59')
+                );
+            }
+            
+            // تصفية حسب رقم الهاتف
+            if (phoneFilter) {
+                filteredSlaughters = filteredSlaughters.filter(s => 
+                    s.customerPhone.toLowerCase().includes(phoneFilter)
+                );
+            }
+            
+            // تعبئة الجدول
+            const tableBody = document.getElementById('customerReportTableBody');
+            tableBody.innerHTML = '';
+            
+            filteredSlaughters.forEach(slaughter => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${new Date(slaughter.date).toLocaleDateString()}</td>
+                    <td>${slaughter.customerPhone}</td>
+                    <td>${slaughter.customerName}</td>
+                    <td>${slaughter.invoiceNumber}</td>
+                    <td>${slaughter.animalType}</td>
+                    <td>${slaughter.cuttingType}</td>
+                    <td>${slaughter.quantity}</td>
+                    <td>${slaughter.total.toFixed(2)}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // تحديث التقرير الإحصائي
+        function updateStatisticsReport() {
+            const fromDate = document.getElementById('statsReportFromDate').value;
+            const toDate = document.getElementById('statsReportToDate').value;
+            
+            let filteredSlaughters = [...appData.slaughters];
+            
+            // تصفية حسب التاريخ
+            if (fromDate) {
+                filteredSlaughters = filteredSlaughters.filter(s => 
+                    new Date(s.date) >= new Date(fromDate)
+                );
+            }
+            
+            if (toDate) {
+                filteredSlaughters = filteredSlaughters.filter(s => 
+                    new Date(s.date) <= new Date(toDate + 'T23:59:59')
+                );
+            }
+            
+            // تجميع البيانات
+            const stats = {};
+            let totalQuantity = 0;
+            let totalAmount = 0;
+            
+            appData.animalTypes.forEach(animal => {
+                appData.cuttingTypes.forEach(cutting => {
+                    if (cutting.animalType === animal.type) {
+                        const key = `${animal.type}_${cutting.type}`;
+                        stats[key] = {
+                            animalType: animal.type,
+                            cuttingType: cutting.type,
+                            quantity: 0,
+                            amount: 0
+                        };
+                    }
+                });
+            });
+            
+            filteredSlaughters.forEach(slaughter => {
+                const key = `${slaughter.animalType}_${slaughter.cuttingType}`;
+                if (stats[key]) {
+                    stats[key].quantity += slaughter.quantity;
+                    stats[key].amount += slaughter.total;
+                    
+                    totalQuantity += slaughter.quantity;
+                    totalAmount += slaughter.total;
+                }
+            });
+            
+            // تعبئة الجدول
+            const tableBody = document.getElementById('statsReportTableBody');
+            tableBody.innerHTML = '';
+            
+            Object.values(stats).forEach(stat => {
+                if (stat.quantity > 0) {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${stat.animalType}</td>
+                        <td>${stat.cuttingType}</td>
+                        <td>${stat.quantity}</td>
+                        <td>${stat.amount.toFixed(2)}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                }
+            });
+            
+            // تحديث المجموع
+            document.getElementById('totalQuantity').textContent = totalQuantity;
+            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
+        }
+        
+        // تحديث شاشة الإعدادات
+        function updateSettingsScreen() {
+            // تحديث قائمة المستخدمين
+            const usersList = document.getElementById('usersList');
+            usersList.innerHTML = '';
+            
+            appData.users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                
+                userItem.innerHTML = `
+                    <div>
+                        <strong>${user.name}</strong> (${user.id})
+                        <br>
+                        <small>الدور: ${user.role === 'admin' ? 'مشرف' : 'مدخل بيانات'}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary delete-user" data-id="${user.id}">حذف</button>
+                    </div>
+                `;
+                
+                usersList.appendChild(userItem);
+            });
+            
+            // تحديث قائمة المسالخ
+            const slaughterhousesList = document.getElementById('slaughterhousesList');
+            slaughterhousesList.innerHTML = '';
+            
+            appData.slaughterhouses.forEach(sh => {
+                const shItem = document.createElement('div');
+                shItem.className = 'user-item';
+                
+                shItem.innerHTML = `
+                    <div>
+                        <strong>${sh.name}</strong>
+                        <br>
+                        <small>بادئة الفاتورة: ${sh.prefix}</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary delete-slaughterhouse" data-name="${sh.name}">حذف</button>
+                    </div>
+                `;
+                
+                slaughterhousesList.appendChild(shItem);
+            });
+            
+            // تحديث قائمة أنواع الذبائح
+            const animalsList = document.getElementById('animalsList');
+            animalsList.innerHTML = '';
+            
+            appData.animalTypes.forEach(animal => {
+                const animalItem = document.createElement('div');
+                animalItem.className = 'user-item';
+                
+                animalItem.innerHTML = `
+                    <div>
+                        <strong>${animal.type}</strong>
+                        <br>
+                        <small>أيام الصلاحية: ${animal.expiryDays} يوم</small>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary delete-animal" data-type="${animal.type}">حذف</button>
+                    </div>
+                `;
+                
+                animalsList.appendChild(animalItem);
+            });
+            
+            // تحديث قائمة أنواع التقطيع
+            const cuttingAnimalTypeSelect = document.getElementById('cuttingAnimalType');
+            cuttingAnimalTypeSelect.innerHTML = '';
+            
+            appData.animalTypes.forEach(animal => {
+                const option = document.createElement('option');
+                option.value = animal.type;
+                option.textContent = animal.type;
+                cuttingAnimalTypeSelect.appendChild(option);
+            });
+            
+            // تحديث المسلخ الافتراضي
+            const defaultSlaughterhouseSelect = document.getElementById('defaultSlaughterhouse');
+            defaultSlaughterhouseSelect.innerHTML = '';
+            
+            appData.slaughterhouses.forEach(sh => {
+                const option = document.createElement('option');
+                option.value = sh.name;
+                option.textContent = sh.name;
+                if (sh.name === appData.settings.defaultSlaughterhouse) {
+                    option.selected = true;
+                }
+                defaultSlaughterhouseSelect.appendChild(option);
+            });
+            
+            // إضافة معالجات الأحداث للحذف
+            document.querySelectorAll('.delete-user').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    if (confirm(`هل أنت متأكد من حذف المستخدم ${userId}؟`)) {
+                        appData.users = appData.users.filter(u => u.id !== userId);
+                        saveData();
+                        updateSettingsScreen();
+                        showMessage('تم حذف المستخدم بنجاح');
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.delete-slaughterhouse').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const shName = this.getAttribute('data-name');
+                    if (confirm(`هل أنت متأكد من حذف المسلخ ${shName}؟`)) {
+                        appData.slaughterhouses = appData.slaughterhouses.filter(sh => sh.name !== shName);
+                        saveData();
+                        updateSettingsScreen();
+                        showMessage('تم حذف المسلخ بنجاح');
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.delete-animal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const animalType = this.getAttribute('data-type');
+                    if (confirm(`هل أنت متأكد من حذف نوع الذبيحة ${animalType}؟`)) {
+                        appData.animalTypes = appData.animalTypes.filter(a => a.type !== animalType);
+                        appData.cuttingTypes = appData.cuttingTypes.filter(ct => ct.animalType !== animalType);
+                        saveData();
+                        updateSettingsScreen();
+                        showMessage('تم حذف نوع الذبيحة بنجاح');
+                    }
+                });
+            });
+        }
+        
+        // عرض الفاتورة
+        function showInvoice(slaughter) {
+            document.getElementById('invoiceSlaughterhouseName').textContent = slaughter.slaughterhouse;
+            document.getElementById('invoiceDate').textContent = `التاريخ: ${new Date(slaughter.date).toLocaleDateString()}`;
+            document.getElementById('invoiceCustomerName').textContent = slaughter.customerName;
+            document.getElementById('invoiceCustomerPhone').textContent = slaughter.customerPhone;
+            document.getElementById('invoiceNumberDisplay').textContent = slaughter.invoiceNumber;
+            document.getElementById('invoiceSlaughterNumber').textContent = slaughter.slaughterNumber;
+            document.getElementById('invoiceStickerNumber').textContent = slaughter.stickerNumber;
+            document.getElementById('invoiceAnimalType').textContent = slaughter.animalType;
+            document.getElementById('invoiceCuttingType').textContent = slaughter.cuttingType;
+            document.getElementById('invoiceQuantity').textContent = slaughter.quantity;
+            document.getElementById('invoicePrice').textContent = slaughter.price.toFixed(2);
+            document.getElementById('invoiceTotal').textContent = slaughter.total.toFixed(2);
+            document.getElementById('invoicePaymentMethod').textContent = slaughter.paymentMethod;
+            document.getElementById('invoiceExtras').textContent = slaughter.extras;
+            document.getElementById('invoiceEmployeeName').textContent = slaughter.employeeName;
+            
+            showScreen(invoice);
+        }
+        
+        // عرض البطاقة الغذائية
+        function showFoodCard(slaughter) {
+            document.getElementById('foodCardSlaughterhouse').textContent = slaughter.slaughterhouse;
+            document.getElementById('foodCardAnimalType').textContent = slaughter.animalType;
+            document.getElementById('foodCardCuttingType').textContent = slaughter.cuttingType;
+            
+            const productionDate = new Date(slaughter.date);
+            document.getElementById('foodCardProductionDate').textContent = productionDate.toLocaleDateString();
+            
+            const animal = appData.animalTypes.find(a => a.type === slaughter.animalType);
+            if (animal) {
+                const expiryDate = new Date(productionDate);
+                expiryDate.setDate(expiryDate.getDate() + animal.expiryDays);
+                document.getElementById('foodCardExpiryDate').textContent = expiryDate.toLocaleDateString();
+            }
+            
+            document.getElementById('foodCardStickerNumber').textContent = slaughter.stickerNumber;
+            
+            showScreen(foodCard);
+        }
+        
+        // تصدير PDF باستخدام jsPDF
+        function exportToPdf(content, filename) {
+            // إنشاء مستند PDF جديد
+            const doc = new jsPDF();
+            
+            // إضافة عنوان التقرير
+            doc.setFontSize(18);
+            doc.setTextColor(40, 40, 40);
+            doc.text(content, 105, 15, { align: 'center' });
+            
+            // إضافة التاريخ
+            doc.setFontSize(12);
+            doc.text(`تاريخ التصدير: ${new Date().toLocaleDateString()}`, 105, 25, { align: 'center' });
+            
+            // إضافة البيانات حسب نوع التقرير
+            if (content === 'تقرير المتعاملين') {
+                // عنوان الجدول
+                doc.setFontSize(14);
+                doc.text('بيانات المتعاملين', 105, 35, { align: 'center' });
+                
+                // عناوين الأعمدة
+                const headers = [
+                    "التاريخ",
+                    "رقم التلفون",
+                    "اسم المتعامل",
+                    "رقم الفاتورة",
+                    "نوع الذبيحة",
+                    "نوع التقطيع",
+                    "العدد",
+                    "الإجمالي"
+                ];
+                
+                // بيانات الجدول
+                const rows = [];
+                const tableBody = document.getElementById('customerReportTableBody');
+                const rowsData = tableBody.querySelectorAll('tr');
+                
+                rowsData.forEach(row => {
+                    const rowData = [];
+                    row.querySelectorAll('td').forEach(cell => {
+                        rowData.push(cell.textContent);
+                    });
+                    rows.push(rowData);
+                });
+                
+                // إنشاء الجدول في PDF
+                doc.autoTable({
+                    head: [headers],
+                    body: rows,
+                    startY: 40,
+                    styles: {
+                        textColor: [40, 40, 40],
+                        fontSize: 10,
+                        cellPadding: 3,
+                        halign: 'center'
+                    },
+                    headStyles: {
+                        fillColor: [93, 64, 55],
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 245, 245]
+                    }
+                });
+            } else if (content === 'التقرير الإحصائي') {
+                // عنوان الجدول
+                doc.setFontSize(14);
+                doc.text('الإحصائيات المالية', 105, 35, { align: 'center' });
+                
+                // عناوين الأعمدة
+                const headers = [
+                    "نوع الذبيحة",
+                    "نوع التقطيع",
+                    "العدد",
+                    "اجمالي المبلغ"
+                ];
+                
+                // بيانات الجدول
+                const rows = [];
+                const tableBody = document.getElementById('statsReportTableBody');
+                const rowsData = tableBody.querySelectorAll('tr');
+                
+                rowsData.forEach(row => {
+                    const rowData = [];
+                    row.querySelectorAll('td').forEach(cell => {
+                        rowData.push(cell.textContent);
+                    });
+                    rows.push(rowData);
+                });
+                
+                // إضافة المجموع
+                rows.push([
+                    "",
+                    "المجموع",
+                    document.getElementById('totalQuantity').textContent,
+                    document.getElementById('totalAmount').textContent
+                ]);
+                
+                // إنشاء الجدول في PDF
+                doc.autoTable({
+                    head: [headers],
+                    body: rows,
+                    startY: 40,
+                    styles: {
+                        textColor: [40, 40, 40],
+                        fontSize: 10,
+                        cellPadding: 3,
+                        halign: 'center'
+                    },
+                    headStyles: {
+                        fillColor: [93, 64, 55],
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold'
+                    },
+                    alternateRowStyles: {
+                        fillColor: [245, 245, 245]
+                    },
+                    footStyles: {
+                        fillColor: [93, 64, 55],
+                        textColor: [255, 255, 255],
+                        fontStyle: 'bold'
+                    }
+                });
+            }
+            
+            // حفظ الملف
+            doc.save(filename);
+            showMessage(`تم تصدير ${filename} بنجاح`);
+        }
+        
+        // مسح نموذج إدخال البيانات
+        function clearDataEntryForm() {
+            document.getElementById('customerPhone').value = '';
+            document.getElementById('customerName').value = '';
+            document.getElementById('stickerNumber').value = '';
+            document.getElementById('slaughterNumber').value = '';
+            document.getElementById('animalType').value = '';
+            document.getElementById('cuttingType').value = '';
+            document.getElementById('quantity').value = '1';
+            document.getElementById('price').value = '';
+            document.getElementById('total').value = '';
+            document.querySelector('input[name="paymentMethod"][value="بطاقة"]').checked = true;
+            document.querySelector('input[name="extras"][value="كرش مصران كوارع"]').checked = true;
+            
+            // تحديث رقم الفاتورة مع المسلخ الافتراضي
+            const defaultSlaughterhouse = appData.settings.defaultSlaughterhouse;
+            if (defaultSlaughterhouse) {
+                document.getElementById('slaughterhouse').value = defaultSlaughterhouse;
+                document.getElementById('slaughterhouse').dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // معالجات الأحداث
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            // تحميل حالة التطبيق
+            const savedScreenId = loadAppState();
+            if (savedScreenId && appData.currentUser) {
+                const screen = document.getElementById(savedScreenId);
+                if (screen) {
+                    showScreen(screen);
+                    welcomeScreen.style.display = 'none';
+                    return;
+                }
+            }
+            
+            // عرض شاشة الترحيب لمدة 2 ثانية ثم الانتقال لتسجيل الدخول
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+                showScreen(loginScreen);
+            }, 2000);
+            
+            // تسجيل الدخول
+            document.getElementById('loginBtn').addEventListener('click', function() {
+                const employeeId = document.getElementById('employeeId').value;
+                const password = document.getElementById('password').value;
+                
+                const user = appData.users.find(u => u.id === employeeId && u.password === password);
+                
+                if (user) {
+                    appData.currentUser = user;
+                    showScreen(dashboard);
+                } else {
+                    showMessage('الرقم الوظيفي أو كلمة المرور غير صحيحة', 'error');
+                }
+            });
+            
+            // تسجيل الخروج
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                appData.currentUser = null;
+                localStorage.removeItem('slaughterManagementAppState');
+                showScreen(loginScreen);
+            });
+            
+            // إغلاق البرنامج
+            document.getElementById('closeProgramBtn').addEventListener('click', function() {
+                if (confirm('هل تريد إغلاق البرنامج؟')) {
+                    // إغلاق نافذة المتصفح (تعمل في المتصفحات الحديثة)
+                    window.close();
+                    
+                    // رسالة بديلة في حالة عدم دعم إغلاق النافذة
+                    showMessage('تم إغلاق البرنامج بنجاح', 'success');
+                }
+            });
+            
+            // التنقل بين الشاشات
+            document.getElementById('dataEntryBtn').addEventListener('click', () => showScreen(dataEntry));
+            document.getElementById('customerReportBtn').addEventListener('click', () => showScreen(customerReport));
+            document.getElementById('statsReportBtn').addEventListener('click', () => showScreen(statisticsReport));
+            document.getElementById('settingsBtn').addEventListener('click', () => {
+                if (appData.currentUser.role === 'admin') {
+                    showScreen(settings);
+                } else {
+                    showMessage('ليس لديك صلاحية الوصول إلى الإعدادات', 'error');
+                }
+            });
+            
+            document.getElementById('backToDashboardBtn').addEventListener('click', () => showScreen(dashboard));
+            document.getElementById('backToDashboardFromCustomerReportBtn').addEventListener('click', () => showScreen(dashboard));
+            document.getElementById('backToDashboardFromStatsReportBtn').addEventListener('click', () => showScreen(dashboard));
+            document.getElementById('backToDashboardFromSettingsBtn').addEventListener('click', () => showScreen(dashboard));
+            document.getElementById('customerReportFromEntryBtn').addEventListener('click', () => showScreen(customerReport));
+            
+            // إضافة ذبيحة
+            document.getElementById('addSlaughterBtn').addEventListener('click', function() {
+                const slaughterhouse = document.getElementById('slaughterhouse').value;
+                const customerPhone = document.getElementById('customerPhone').value;
+                const customerName = document.getElementById('customerName').value;
+                const invoiceNumber = document.getElementById('invoiceNumber').value;
+                const stickerNumber = document.getElementById('stickerNumber').value;
+                const slaughterNumber = document.getElementById('slaughterNumber').value;
+                const animalType = document.getElementById('animalType').value;
+                const cuttingType = document.getElementById('cuttingType').value;
+                const quantity = parseInt(document.getElementById('quantity').value);
+                const price = parseFloat(document.getElementById('price').value);
+                const total = parseFloat(document.getElementById('total').value);
+                const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                const extras = document.querySelector('input[name="extras"]:checked').value;
+                
+                if (!slaughterhouse || !customerPhone || !customerName || !animalType || !cuttingType || !quantity || !price) {
+                    showMessage('الرجاء ملء جميع الحقول المطلوبة', 'error');
+                    return;
+                }
+                
+                // حفظ العميل إذا لم يكن موجودًا
+                if (!appData.customers.some(c => c.phone === customerPhone)) {
+                    appData.customers.push({
+                        phone: customerPhone,
+                        name: customerName
+                    });
+                }
+                
+                // حفظ الذبيحة
+                const slaughter = {
+                    date: new Date().toISOString(),
+                    slaughterhouse,
+                    customerPhone,
+                    customerName,
+                    invoiceNumber,
+                    stickerNumber,
+                    slaughterNumber,
+                    animalType,
+                    cuttingType,
+                    quantity,
+                    price,
+                    total,
+                    paymentMethod,
+                    extras,
+                    employeeName: appData.currentUser.name
+                };
+                
+                appData.slaughters.push(slaughter);
+                
+                // تحديث آخر رقم فاتورة
+                const prefix = invoiceNumber.split('-')[0];
+                const number = parseInt(invoiceNumber.split('-')[1]);
+                appData.lastInvoiceNumbers[prefix] = number;
+                
+                saveData();
+                showMessage('تم إضافة الذبيحة بنجاح');
+                
+                // عرض الفاتورة
+                showInvoice(slaughter);
+            });
+            
+            // طباعة الفاتورة
+            document.getElementById('printInvoiceBtn').addEventListener('click', function() {
+                const slaughterhouse = document.getElementById('slaughterhouse').value;
+                const customerPhone = document.getElementById('customerPhone').value;
+                const customerName = document.getElementById('customerName').value;
+                const invoiceNumber = document.getElementById('invoiceNumber').value;
+                const stickerNumber = document.getElementById('stickerNumber').value;
+                const slaughterNumber = document.getElementById('slaughterNumber').value;
+                const animalType = document.getElementById('animalType').value;
+                const cuttingType = document.getElementById('cuttingType').value;
+                const quantity = parseInt(document.getElementById('quantity').value);
+                const price = parseFloat(document.getElementById('price').value);
+                const total = parseFloat(document.getElementById('total').value);
+                const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+                const extras = document.querySelector('input[name="extras"]:checked').value;
+                
+                if (!slaughterhouse || !customerPhone || !customerName || !invoiceNumber || !animalType || !cuttingType || !quantity || !price) {
+                    showMessage('الرجاء ملء جميع الحقول المطلوبة قبل الطباعة', 'error');
+                    return;
+                }
+                
+                const slaughter = {
+                    date: new Date().toISOString(),
+                    slaughterhouse,
+                    customerPhone,
+                    customerName,
+                    invoiceNumber,
+                    stickerNumber,
+                    slaughterNumber,
+                    animalType,
+                    cuttingType,
+                    quantity,
+                    price,
+                    total,
+                    paymentMethod,
+                    extras,
+                    employeeName: appData.currentUser.name
+                };
+                
+                showInvoice(slaughter);
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            });
+            
+            // طباعة البطاقة الغذائية
+            document.getElementById('printFoodCardBtn').addEventListener('click', function() {
+                const slaughterhouse = document.getElementById('slaughterhouse').value;
+                const stickerNumber = document.getElementById('stickerNumber').value;
+                const animalType = document.getElementById('animalType').value;
+                const cuttingType = document.getElementById('cuttingType').value;
+                
+                if (!slaughterhouse || !stickerNumber || !animalType || !cuttingType) {
+                    showMessage('الرجاء ملء جميع الحقول المطلوبة قبل الطباعة', 'error');
+                    return;
+                }
+                
+                const slaughter = {
+                    date: new Date().toISOString(),
+                    slaughterhouse,
+                    stickerNumber,
+                    animalType,
+                    cuttingType
+                };
+                
+                showFoodCard(slaughter);
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+                
+                // مسح النموذج فقط بعد طباعة البطاقة الغذائية
+                clearDataEntryForm();
+            });
+            
+            // إغلاق البطاقة الغذائية
+            document.getElementById('closeFoodCardBtn').addEventListener('click', function() {
+                showScreen(dataEntry);
+            });
+            
+            // تصفية تقرير المتعاملين
+            document.getElementById('filterCustomerReportBtn').addEventListener('click', updateCustomerReport);
+            
+            // تصدير تقرير المتعاملين PDF
+            document.getElementById('exportCustomerReportPdfBtn').addEventListener('click', function() {
+                exportToPdf('تقرير المتعاملين', 'تقرير_المتعاملين.pdf');
+            });
+            
+            // تصفية التقرير الإحصائي
+            document.getElementById('filterStatsReportBtn').addEventListener('click', updateStatisticsReport);
+            
+            // تصدير التقرير الإحصائي PDF
+            document.getElementById('exportStatsReportPdfBtn').addEventListener('click', function() {
+                exportToPdf('التقرير الإحصائي', 'التقرير_الإحصائي.pdf');
+            });
+            
+            // إغلاق الفاتورة
+            document.getElementById('closeInvoiceBtn').addEventListener('click', function() {
+                showScreen(dataEntry);
+            });
+            
+            // تبديل تبويبات الإعدادات
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.settings-content').forEach(c => c.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById(`${this.getAttribute('data-tab')}Tab`).classList.add('active');
+                });
+            });
+            
+            // إضافة مستخدم جديد
+            document.getElementById('addEmployeeBtn').addEventListener('click', function() {
+                const id = document.getElementById('newEmployeeId').value;
+                const name = document.getElementById('newEmployeeName').value;
+                const password = document.getElementById('newEmployeePassword').value;
+                const role = document.getElementById('newEmployeeRole').value;
+                
+                if (!id || !name || !password) {
+                    showMessage('الرجاء ملء جميع الحقول المطلوبة', 'error');
+                    return;
+                }
+                
+                if (appData.users.some(u => u.id === id)) {
+                    showMessage('الرقم الوظيفي موجود مسبقًا', 'error');
+                    return;
+                }
+                
+                appData.users.push({
+                    id,
+                    name,
+                    password,
+                    role
+                });
+                
+                saveData();
+                showMessage('تم إضافة المستخدم بنجاح');
+                
+                // مسح الحقول
+                document.getElementById('newEmployeeId').value = '';
+                document.getElementById('newEmployeeName').value = '';
+                document.getElementById('newEmployeePassword').value = '';
+                
+                updateSettingsScreen();
+            });
+            
+            // إضافة مسلخ جديد
+            document.getElementById('addSlaughterhouseBtn').addEventListener('click', function() {
+                const name = document.getElementById('newSlaughterhouseName').value;
+                const prefix = document.getElementById('newSlaughterhousePrefix').value;
+                
+                if (!name || !prefix) {
+                    showMessage('الرجاء ملء جميع الحقول المطلوبة', 'error');
+                    return;
+                }
+                
+                if (appData.slaughterhouses.some(sh => sh.name === name)) {
+                    showMessage('اسم المسلخ موجود مسبقًا', 'error');
+                    return;
+                }
+                
+                appData.slaughterhouses.push({
+                    name,
+                    prefix
+                });
+                
+                appData.lastInvoiceNumbers[prefix] = 0;
+                
+                saveData();
+                showMessage('تم إضافة المسلخ بنجاح');
+                
+                // تحديث شاشة الإدخال
+                const slaughterhouseSelect = document.getElementById('slaughterhouse');
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                slaughterhouseSelect.appendChild(option);
+                
+                // مسح الحقول
+                document.getElementById('newSlaughterhouseName').value = '';
+                document.getElementById('newSlaughterhousePrefix').value = '';
+                
+                updateSettingsScreen();
+            });
+            
+            // إضافة نوع ذبيحة جديد
+            document.getElementById('addAnimalTypeBtn').addEventListener('click', function() {
+                const type = document.getElementById('newAnimalType').value;
+                const expiryDays = parseInt(document.getElementById('newAnimalExpiryDays').value);
+                
+                if (!type || !expiryDays) {
+                    showMessage('الرجاء ملء جميع الحقول المطلوبة', 'error');
+                    return;
+                }
+                
+                if (appData.animalTypes.some(a => a.type === type)) {
+                    showMessage('نوع الذبيحة موجود مسبقًا', 'error');
+                    return;
+                }
+                
+                appData.animalTypes.push({
+                    type,
+                    expiryDays
+                });
+                
+                saveData();
+                showMessage('تم إضافة نوع الذبيحة بنجاح');
+                
+                // تحديث شاشة الإدخال
+                const animalTypeSelect = document.getElementById('animalType');
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                animalTypeSelect.appendChild(option);
+                
+                // مسح الحقول
+                document.getElementById('newAnimalType').value = '';
+                document.getElementById('newAnimalExpiryDays').value = '';
+                
+                updateSettingsScreen();
+            });
+            
+            // إضافة نوع تقطيع جديد
+            document.getElementById('addCuttingTypeBtn').addEventListener('click', function() {
+                const animalType = document.getElementById('cuttingAnimalType').value;
+                const type = document.getElementById('newCuttingType').value;
+                const price = parseFloat(document.getElementById('newCuttingPrice').value);
+                
+                if (!animalType || !type || !price) {
+                    showMessage('الرجاء ملء جميع الحقول المطلوبة', 'error');
+                    return;
+                }
+                
+                if (appData.cuttingTypes.some(ct => ct.animalType === animalType && ct.type === type)) {
+                    showMessage('نوع التقطيع موجود مسبقًا لهذه الذبيحة', 'error');
+                    return;
+                }
+                
+                appData.cuttingTypes.push({
+                    animalType,
+                    type,
+                    price
+                });
+                
+                saveData();
+                showMessage('تم إضافة نوع التقطيع بنجاح');
+                
+                // تحديث شاشة الإدخال
+                const cuttingTypeSelect = document.getElementById('cuttingType');
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                cuttingTypeSelect.appendChild(option);
+                
+                // مسح الحقول
+                document.getElementById('newCuttingType').value = '';
+                document.getElementById('newCuttingPrice').value = '';
+                
+                updateSettingsScreen();
+            });
+            
+            // تغيير صورة شاشة الترحيب
+            document.getElementById('changeWelcomeImageBtn').addEventListener('click', function() {
+                const fileInput = document.getElementById('welcomeImageUpload');
+                if (fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        appData.settings.welcomeImage = e.target.result;
+                        saveData();
+                        showMessage('تم تغيير صورة شاشة الترحيب بنجاح');
+                    };
+                    
+                    reader.readAsDataURL(fileInput.files[0]);
+                } else {
+                    showMessage('الرجاء اختيار صورة', 'error');
+                }
+            });
+            
+            // تغيير المسلخ الافتراضي
+            document.getElementById('defaultSlaughterhouse').addEventListener('change', function() {
+                appData.settings.defaultSlaughterhouse = this.value;
+                saveData();
+                showMessage('تم تغيير المسلخ الافتراضي بنجاح');
+            });
+        });
+    </script>
+    
+    <!-- إضافة مكتبة jsPDF لتصدير PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        // جعل jsPDF متاحًا بشكل عام
+        window.jsPDF = window.jspdf.jsPDF;
+    </script>
+</body>
+</html>
